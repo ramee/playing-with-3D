@@ -6,9 +6,7 @@ document.addEventListener("DOMContentLoaded", (_) => {
   const rotationInput = document.getElementById(
     "rotationInput",
   ) as HTMLInputElement;
-  const rotationIndicator = document.getElementById(
-    "rotationIndicator",
-  ) as HTMLInputElement;
+  const scaleInput = document.getElementById("scaleInput") as HTMLInputElement;
   const ctx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
 
   const center = [canvasElement.width / 2, canvasElement.height / 2];
@@ -32,9 +30,10 @@ document.addEventListener("DOMContentLoaded", (_) => {
 
   const renderFunction = () => {
     ctx.reset();
+    ctx.translate(center[0], center[1]);
 
     const angle = parseFloat(rotationInput.value);
-    rotationIndicator.innerText = angle.toString();
+    const scale = parseInt(scaleInput.value);
     const rotationX = [
       [1, 0, 0],
       [0, Math.cos(angle), -Math.sin(angle)],
@@ -51,6 +50,9 @@ document.addEventListener("DOMContentLoaded", (_) => {
       [0, 0, 1],
     ];
 
+    const projectedVectorList: Vector3D[] = [];
+
+    let index = 0;
     for (let vector of vectors) {
       let rotationVector = Util3D.multiplyMatricies(rotationX, vector);
 
@@ -62,18 +64,33 @@ document.addEventListener("DOMContentLoaded", (_) => {
         rotationVector,
       );
 
-      projectedVector = projectedVector.scale(200);
+      projectedVector = projectedVector.scale(scale);
 
-      ctx.fillRect(
-        center[0] + projectedVector.x,
-        center[1] + projectedVector.y,
-        4,
-        4,
-      );
+      projectedVectorList[index] = projectedVector;
+
+      ctx.fillRect(projectedVector.x, projectedVector.y, 4, 4);
+
+      ++index;
     }
+
+    Renderer.drawLineBetween(ctx, projectedVectorList, 0, 1);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 1, 2);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 2, 3);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 3, 0);
+
+    Renderer.drawLineBetween(ctx, projectedVectorList, 4, 5);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 5, 6);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 6, 7);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 7, 4);
+
+    Renderer.drawLineBetween(ctx, projectedVectorList, 0, 4);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 1, 5);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 2, 6);
+    Renderer.drawLineBetween(ctx, projectedVectorList, 3, 7);
   };
 
   rotationInput.addEventListener("input", renderFunction);
+  scaleInput.addEventListener("input", renderFunction);
 
   renderFunction();
 });
@@ -97,6 +114,24 @@ class Vector3D {
 
   static fromArray(coords: number[]): Vector3D {
     return new Vector3D(coords[Axis.x], coords[Axis.y], coords[Axis.z]);
+  }
+}
+
+class Renderer {
+  static drawLineBetween(
+    ctx: CanvasRenderingContext2D,
+    vectors: Vector3D[],
+    index1: number,
+    index2: number,
+  ) {
+    const vector1 = vectors[index1];
+    const vector2 = vectors[index2];
+    ctx.beginPath();
+    ctx.moveTo(vector1.x, vector1.y);
+    ctx.lineTo(vector2.x, vector2.y);
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+    ctx.closePath();
   }
 }
 
