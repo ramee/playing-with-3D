@@ -14,15 +14,15 @@ document.addEventListener("DOMContentLoaded", (_) => {
   const center = [canvasElement.width / 2, canvasElement.height / 2];
 
   const vectors = [
-    Vector3D.fromArray([-50, -50, -50]),
-    Vector3D.fromArray([50, -50, -50]),
-    Vector3D.fromArray([50, 50, -50]),
-    Vector3D.fromArray([-50, 50, -50]),
+    Vector3D.fromArray([-0.5, -0.5, -0.5]),
+    Vector3D.fromArray([0.5, -0.5, -0.5]),
+    Vector3D.fromArray([0.5, 0.5, -0.5]),
+    Vector3D.fromArray([-0.5, 0.5, -0.5]),
 
-    Vector3D.fromArray([-50, -50, 50]),
-    Vector3D.fromArray([50, -50, 50]),
-    Vector3D.fromArray([50, 50, 50]),
-    Vector3D.fromArray([-50, 50, 50]),
+    Vector3D.fromArray([-0.5, -0.5, 0.5]),
+    Vector3D.fromArray([0.5, -0.5, 0.5]),
+    Vector3D.fromArray([0.5, 0.5, 0.5]),
+    Vector3D.fromArray([-0.5, 0.5, 0.5]),
   ];
 
   const projection2D = [
@@ -57,10 +57,12 @@ document.addEventListener("DOMContentLoaded", (_) => {
       rotationVector = Util3D.multiplyMatricies(rotationY, rotationVector);
       rotationVector = Util3D.multiplyMatricies(rotationZ, rotationVector);
 
-      const projectedVector = Util3D.multiplyMatricies(
+      let projectedVector = Util3D.multiplyMatricies(
         projection2D,
         rotationVector,
       );
+
+      projectedVector = projectedVector.scale(200);
 
       ctx.fillRect(
         center[0] + projectedVector.x,
@@ -72,6 +74,8 @@ document.addEventListener("DOMContentLoaded", (_) => {
   };
 
   rotationInput.addEventListener("input", renderFunction);
+
+  renderFunction();
 });
 
 enum Axis {
@@ -86,6 +90,10 @@ class Vector3D {
     public readonly y: number,
     public readonly z: number,
   ) {}
+
+  scale(s: number): Vector3D {
+    return Vector3D.fromArray([this.x * s, this.y * s, this.z * s]);
+  }
 
   static fromArray(coords: number[]): Vector3D {
     return new Vector3D(coords[Axis.x], coords[Axis.y], coords[Axis.z]);
